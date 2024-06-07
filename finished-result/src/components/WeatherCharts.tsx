@@ -2,7 +2,8 @@ import React from 'react';
 import { Line, Bar, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
 import { forecastType } from './../types';
-import "./chart.css"
+import "./chart.css";
+
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend);
 
 type Props = {
@@ -48,18 +49,48 @@ const WeatherCharts = ({ data }: Props) => {
     ],
   };
 
+  const precipitationData = {
+    labels: ['No Rain', 'Rain'],
+    datasets: [
+      {
+        data: [
+          100 - Math.round(data.list[0].pop * 100), // No Rain
+          Math.round(data.list[0].pop * 100) // Rain
+        ],
+        backgroundColor: ['rgba(54, 162, 235, 0.2)', 'rgba(255, 99, 132, 0.2)'],
+        borderColor: ['rgba(54, 162, 235, 1)', 'rgba(255, 99, 132, 1)'],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const handleButtonClick = () => {
+    window.location.reload();
+  };
+
   return (
-    <div className="flex justify-center items-center bg-gradient-to-br from-sky-400 via-rose-400 to-lime-400 h-[100%] w-full">
-    <div className="w-[40%] h-[100%]  text-zinc-900 bg-white/20 backdrop-blur-ls rounded drop-shadow-lg p-8 mb-20 flex flex-col justify-between">
-      <h2 className="mt-2 text-lg">Temperature</h2>
-      <Line className='chart' data={temperatureData} />
-      <hr />
-      <h2 className="mt-2 text-lg">Humidity</h2>
-      <Bar data={humidityData} />
-      <hr />
-      <h2 className="mt-2 text-lg">Wind Speed</h2>
-      <Line data={windData} />
-    </div>
+    <div className="weather-charts-container">
+      <div className="chart-wrapper">
+        <h2>Temperature</h2>
+        <Line className="chart" data={temperatureData} />
+      </div>
+      <div className="chart-wrapper">
+        <h2>Humidity</h2>
+        <Bar className="chart" data={humidityData} />
+      </div>
+      <div className="chart-wrapper">
+        <h2>Wind Speed</h2>
+        <Line className="chart" data={windData} />
+      </div>
+      <div className="chart-wrapper centered-chart">
+        <h2>Precipitation Probability</h2>
+        <Pie className="chart" data={precipitationData} />
+      </div>
+      <div className="search-button-wrapper">
+        <button className="search-button" onClick={handleButtonClick}>
+          Search Another City
+        </button>
+      </div>
     </div>
   );
 };
