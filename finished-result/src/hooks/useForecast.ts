@@ -8,47 +8,46 @@ const useForecast = () => {
   const [term, setTerm] = useState<string>('');
   const [options, setOptions] = useState<optionType[]>([]);
   const [forecast, setForecast] = useState<forecastType | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null); // Add error state
 
   const getSearchOptions = async (term: string) => {
     try {
-      const res = await fetch(
+      const response = await fetch(
         `${BASE_URL}/geo/1.0/direct?q=${term.trim()}&limit=5&lang=en&appid=${process.env.REACT_APP_API_KEY}`
       );
-      const data = await res.json();
-      if (res.ok) {
-        setOptions(data);
-        setError(null);
-      } else {
-        setError(data.message);
-        setOptions([]);
+      if (!response.ok) {
+        throw new Error('Failed to fetch search options');
       }
+      const data = await response.json();
+      setOptions(data);
     } catch (e) {
-      setError('Failed to fetch options');
-      setOptions([]);
+      console.error(e);
+      setError('Failed to fetch search options');
     }
   };
 
-  const getForecast = async (data: optionType) => {
+  const onSubmit = () => {
+    if (!city) return;
+    getForecast(city);
+  };
+
+  const getForecast = async (selectedCity: optionType) => {
     try {
-      const res = await fetch(
-        `${BASE_URL}/data/2.5/forecast?lat=${data.lat}&lon=${data.lon}&units=metric&lang=en&appid=${process.env.REACT_APP_API_KEY}`
+      const response = await fetch(
+        `${BASE_URL}/data/2.5/forecast?lat=${selectedCity.lat}&lon=${selectedCity.lon}&units=metric&lang=en&appid=${process.env.REACT_APP_API_KEY}`
       );
-      const forecastData = await res.json();
-      if (res.ok) {
-        const formattedData = {
-          ...forecastData.city,
-          list: forecastData.list.slice(0, 16),
-        };
-        setForecast(formattedData);
-        setError(null);
-      } else {
-        setError(forecastData.message);
-        setForecast(null);
+      if (!response.ok) {
+        throw new Error('Failed to fetch forecast');
       }
+      const forecastData = await response.json();
+      const filteredForecast = {
+        ...forecastData.city,
+        list: forecastData.list.slice(0, 16),
+      };
+      setForecast(filteredForecast);
     } catch (e) {
+      console.error(e);
       setError('Failed to fetch forecast');
-      setForecast(null);
     }
   };
 
@@ -64,12 +63,6 @@ const useForecast = () => {
     }
   };
 
-  const onSubmit = () => {
-    if (city) {
-      getForecast(city);
-    }
-  };
-
   useEffect(() => {
     if (city) {
       setTerm(city.name);
@@ -81,7 +74,7 @@ const useForecast = () => {
     forecast,
     options,
     term,
-    error,
+    error, // Return error state
     onOptionSelect,
     onSubmit,
     onInputChange,
